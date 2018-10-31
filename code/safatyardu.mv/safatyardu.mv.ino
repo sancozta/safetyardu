@@ -12,7 +12,7 @@ void setup(){
 
     //LIGANDO LED QUANDO TIVER MOVIMENTO
     pinMode(PINLED, OUTPUT);
-    
+
 }
 
 //FUNÇÃO LOOP

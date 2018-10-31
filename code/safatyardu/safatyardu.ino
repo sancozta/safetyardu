@@ -3,8 +3,9 @@
 // RX e TX DO ESP8266
 SoftwareSerial ESP(2, 3);
 
-// MOSTRAR UM LOG DETALHADO
-bool DEBUG = false;
+// SENSOR DE MOVIMENTACAO E DEBUG
+#define PINMOV 7
+#define DEBUG false
 
 void setup(){
 
@@ -13,17 +14,31 @@ void setup(){
 
     // CONECNTANDO AO ESP
     ESP.begin(9600);
+	
+	//DETERMINANDO ENTRADA DO PINO DO SENSOR DE MOVIMENTO
+    pinMode(PINMOV, INPUT);
 
     // INICIALIZAR WIFI COM ESP
     initwifi();
-
-    // REQUEST DE MOVIMENTO
-    requestmov();
-
+	
 }
 
 // FUNCTION LOOP
 void loop(){
+	
+	//VERIFICANDO DETECÇÃO DE MOVIMENTO
+    boolean GETMOV = digitalRead(PINMOV);
+
+    delay(1000);
+
+    if (GETMOV){
+
+        Serial.println("## DETECTION ##");
+		
+		// REQUEST DE MOVIMENTO
+		requestmov();
+		
+    }
 
 }
 
