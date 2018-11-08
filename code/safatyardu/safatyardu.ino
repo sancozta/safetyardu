@@ -1,7 +1,7 @@
 #include <SoftwareSerial.h>
 
 // RX e TX DO ESP8266
-SoftwareSerial ESP(2,3);
+SoftwareSerial esp(2,3);
 
 // SENSOR DE MOVIMENTACAO E DEBUG
 #define PINMOV 7
@@ -12,7 +12,7 @@ void setup() {
   Serial.begin(9600);
 
   // CONECNTANDO AO ESP
-  ESP.begin(9600);
+  esp.begin(9600);
 
   //DETERMINANDO ENTRADA DO PINO DO SENSOR DE MOVIMENTO
   pinMode(PINMOV, INPUT);
@@ -41,7 +41,7 @@ void loop() {
 
 // REALIZANDO A CONEXAO COM O WIFI
 void initwifi() {
- 
+
   // AT - TEST ACTION
   sendwifi("AT\r\n", 2000);
 
@@ -49,7 +49,7 @@ void initwifi() {
   sendwifi("AT+RST\r\n", 2000);
 
   // AT+CWJAP= - CONECTAR A REDE WIRELESS
-  sendwifi("AT+CWJAP=\"Home Not\",\"21508670\"\r\n", 2000);
+  sendwifi("AT+CWJAP=\"Home Cel\",\"21508670\"\r\n", 2000);
 
   delay(4000);
 
@@ -71,7 +71,7 @@ void requestmov() {
   sendwifi("AT+CIPCLOSE\r\n", 2000);
 
   // AT+CIPSTART - INICIA UMA CONEXAO COMO CLIENTE
-  sendwifi("AT+CIPSTART=\"TCP\",\"safetyflask.herokuapp.com\",80\r\n", 2000);
+  sendwifi("AT+CIPSTART=\"TCP\",\"35.236.31.221\",80\r\n", 2000);
 
   delay(1000);
 
@@ -80,7 +80,7 @@ void requestmov() {
   String command  = "";
 
   request += "POST /logs HTTP/1.1\r\n";
-  request += "Host: safetyflask.herokuapp.com\r\n";
+  request += "Host: 35.236.31.221\r\n";
   request += "Authorization: Basic YWRtaW46c2VjcmV0\r\n";
   request += "Content-Type: application/x-www-form-urlencoded\r\n";
   request += "cache-control: no-cache\r\n";
@@ -107,7 +107,7 @@ void sendwifi(String command, long timeout) {
   Serial.println(command);
 
   // ESCREVENDO NO MODULO ESP8266
-  ESP.print(command);
+  esp.print(command);
 
   // CAPTURA MILISEGUNDOS
   long int times = millis();
@@ -116,15 +116,15 @@ void sendwifi(String command, long timeout) {
   String response = "";
 
   while ((times + timeout) > millis()) {
-    while (ESP.available()) {
-
+    while (esp.available()) {
+      
       // O ESP TEM DADOS, ASSIM MOSTRA A SUA SAÃ�DA PARA A JANELA SERIAL
-      char c = (char) ESP.read();
+      char c = (char) esp.read();
       response += c;
 
     }
   }
-
+  
   // ESCREVENDO DEBUG NO TERMINAL
   Serial.println(response);
 
