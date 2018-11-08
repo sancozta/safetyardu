@@ -3,10 +3,8 @@
 // RX e TX DO ESP8266
 SoftwareSerial ESP(2, 3);
 
-// MOSTRAR UM LOG DETALHADO
-bool DEBUG = false;
-
-void setup(){
+void setup()
+{
 
     // OPEN SERIAL COMMUNICATIONS AND WAIT FOR PORT TO OPEN ESP8266:
     Serial.begin(9600);
@@ -23,97 +21,99 @@ void setup(){
 }
 
 // FUNCTION LOOP
-void loop(){
-
-}
+void loop(){}
 
 // REALIZANDO A CONEXAO COM O WIFI
-void initwifi(){
-    
-    // RST
-    sendwifi("AT+RST\r\n", 2000, DEBUG); 
-    
-    // CONECTA A REDE WIRELESS
-    sendwifi("AT+CWJAP=\"SSID\",\"SENHA\"\r\n", 2000, DEBUG);
-    
-    delay(3000);
+void initwifi()
+{
 
-    // MODO WIFI NÚMERO 1( ESTAÇÃO-CLIENTE )
-    sendwifi("AT+CWMODE=1\r\n", 1000, DEBUG);
+    // AT - TEST ACTION
+    sendwifi("AT\r\n", 2000);
 
-    // MOSTRA O ENDERECO IP
-    sendwifi("AT+CIFSR\r\n", 1000, DEBUG);
+    // AT+RST - REST MODULE
+    sendwifi("AT+RST\r\n", 2000);
 
-    // CONFIGURA PARA MULTIPLAS CONEXOES ( MAX=4 )
-    sendwifi("AT+CIPMUX=1\r\n", 1000, DEBUG);
+    // AT+CWJAP= - CONECTAR A REDE WIRELESS
+    sendwifi("AT+CWJAP=\"SSID\",\"PASSWORD\"\r\n", 2000);
 
-}
+    delay(4000);
 
-// FUNÇAO PARA ENVIAR DADOS PARA O ESP8266.
-String sendwifi(String command, long timeout, boolean debug){
+    // AT+CWMODE=1 - DEFININDO MODO WIFI COMO ESTACAO CLIENTE (1)
+    sendwifi("AT+CWMODE=1\r\n", 2000);
 
-    String response = "";
+    // AT+CIFSR - MOSTRA O ENDERECO IP COMO UM CLIENTE
+    sendwifi("AT+CIFSR\r\n", 2000);
 
-    // ESCREVENDO NO MODULO ESP8266
-    ESP.println(command); 
-
-    // CAPTURA MILISEGUNDOS
-    long times = millis();
-    
-    while ((times + timeout) > millis()){
-        while (ESP.available()){
-
-            // O ESP TEM DADOS, ASSIM MOSTRA A SUA SAÍDA PARA A JANELA SERIAL
-            char c = ESP.read(); 
-            response += c;
-
-        }
-    }
-
-    // ESCREVENDO DEBUG NO TERMINAL
-    if (debug){
-        Serial.println(response);
-    }
-
-    return response;
+    // AT+CIPMUX - CONFIGURA PARA MULTIPLAS CONEXOES ( MAX=4 )
+    sendwifi("AT+CIPMUX=0\r\n", 2000);
 
 }
 
 // REALIZANDO REQUISICAO DA DETECCAO DE MOVIMENTO
-void requestmov(){
+void requestmov()
+{
 
-    Serial.println("# INIT REQUEST");
+    // AT+CIPCLOSE - ASSEGURA QUE A CONEXAO 0 ESTAO LIVRE ASSIM PODENDO SER USADA
+    sendwifi("AT+CIPCLOSE\r\n", 2000);
 
-    // ASSEGURA QUE A CONEXÃO 0 ESTÁ LIVRE PRA SER USADA
-    sendwifi("AT+CIPCLOSE=0\r\n", 2000, DEBUG);
+    // AT+CIPSTART - INICIA UMA CONEXAO COMO CLIENTE
+    sendwifi("AT+CIPSTART=\"TCP\",\"safetyflask.herokuapp.com\",80\r\n", 2000);
 
-    sendwifi("AT+CIPSTART=0,\"TCP\",\"safetyflask.herokuapp.com\",80\r\n", 1000, DEBUG);
-    
     delay(1000);
 
     String request  = "";
     String body     = "arduino=DFEFEGNE24324";
     String command  = "";
 
-    request += "POST /logs HTTP/1.1\r\n"; 
+    request += "POST /logs HTTP/1.1\r\n";
     request += "Host: safetyflask.herokuapp.com\r\n";
     request += "Authorization: Basic YWRtaW46c2VjcmV0\r\n";
-    request += "Content-Type: application/x-www-form-urlencoded\r\n";    
-    request += "Content-Length: "+body.length()+"\r\n";
-    request += body+"\r\n";
+    request += "Content-Type: application/x-www-form-urlencoded\r\n";
+    request += "cache-control: no-cache\r\n";
+    request += "Content-Length: " + String(body.length()) + "\r\n\r\n";
+    request += body + "\r\n";
 
-    command = "AT+CIPSEND=0,";
-    command += request.length();
-    command += "\r\n";
+    // AT+CIPSEND - DEFINIR O COMPRIMENTO DOS DADOS QUE SERAO ENVIADOS
+    command = "AT+CIPSEND=" + String(request.length()) + "\r\n";
 
-    sendwifi(command, 1000, DEBUG);
+    sendwifi(command, 2000);
 
-    sendwifi(request, 1000, DEBUG);
+    sendwifi(request, 2000);
 
-    delay(5000);
+    delay(4000);
 
-    sendwifi("AT+CIPCLOSE=0\r\n", 1000, DEBUG);
+    sendwifi("AT+CIPCLOSE\r\n", 2000);
 
-    Serial.println("# END REQUEST");
+}
 
+// FUNÇAO PARA ENVIAR DADOS PARA O ESP8266.
+void sendwifi(String command, long timeout)
+{
+
+    // ESCREVENDO COMANDO NO MONITOR SERIAL
+    Serial.println(command);
+
+    // ESCREVENDO NO MODULO ESP8266
+    ESP.print(command);
+
+    // CAPTURA MILISEGUNDOS
+    long int times = millis();
+
+    // STRING DE RETORNO
+    String response = "";
+
+    while ((times + timeout) > millis())
+    {
+        while (ESP.available())
+        {
+
+            // O ESP TEM DADOS, ASSIM MOSTRA A SUA SAÍDA PARA A JANELA SERIAL
+            char c = (char) ESP.read();
+            response += c;
+        }
+    }
+
+    // ESCREVENDO DEBUG NO TERMINAL
+    Serial.println(response);
+    
 }
