@@ -54,7 +54,7 @@ void initwifi()
     sendwifi("AT+RST\r\n", 2000);
 
     // AT+CWJAP= - CONECTAR A REDE WIRELESS
-    sendwifi("AT+CWJAP=\"SSID\",\"PASSWORD\"\r\n", 2000);
+    sendwifi("AT+CWJAP=\"Home Cel\",\"21508670\"\r\n", 2000);
 
     delay(4000);
 
